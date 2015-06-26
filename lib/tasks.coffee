@@ -64,6 +64,7 @@ module.exports =
       "tasks:update-timestamps": => @tasksUpdateTimestamp()
       "tasks:cancel": => @cancelTask()
       "tasks:convert-to-task": => @convertToTask()
+      "tasks:fold-completed": => @tasksFold()
 
 
 
@@ -284,6 +285,40 @@ module.exports =
           tasks.setMarker editor, row, marker
 
 
+  ###*
+   * Helper for triggering code folding
+   * for completed and cancelled tasks
+  ###
+  tasksFold: ->
+    editor = atom.workspace.getActiveTextEditor()
+    return if not editor
+
+    editor.transact ->
+
+      completedTasks = []
+      archiveProject = null
+
+      # 1. Find the archives section, if it exists
+
+      editor.displayBuffer.tokenizedBuffer.tokenizedLines.every (i, ind)->
+        # if we already found the archive, no need
+        # to parse any more!
+        return false if archiveProject
+        hasDone = tasks.getToken i.tokens, tasks.doneSelector
+        hasCancelled = tasks.getToken i.tokens, tasks.cancelledSelector
+        hasArchive = tasks.getToken i.tokens, tasks.archiveSelector
+
+        el =
+          lineNumber: ind
+          line: i
+
+        archiveProject = el if hasArchive
+        completedTasks.push el if hasDone or hasCancelled
+        true
+
+      # 2. move cursor through each completed task and fold there
+      completedTasks.forEach (i)->
+        editor.foldBufferRow i.lineNumber
 
   ###*
    * Helper for handling the archiving of

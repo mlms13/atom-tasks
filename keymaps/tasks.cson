@@ -11,6 +11,7 @@
   'cmd-enter': 'tasks:add'
   'cmd-shift-enter': 'tasks:add-above'
   'cmd-d': 'tasks:complete'
+  'cmd-shift-d': 'tasks:fold-completed'
   'cmd-shift-a': 'tasks:archive'
   'ctrl-c': 'tasks:cancel'
 
